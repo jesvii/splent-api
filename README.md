@@ -1,58 +1,58 @@
 # Splent API
 
-API en Flask para listar paquetes desde GitHub y leer su contrato en `pyproject.toml`.
+A Flask API to list packages from GitHub and read their contract from `pyproject.toml`.
 
-## Requisitos
+## Requirements
 
-- Python 3.11+ (recomendado)
-- Un token de GitHub (opcional, pero recomendado para evitar limites de rate limit)
+- Python 3.11+ (recommended)
+- A GitHub token (optional, but recommended to avoid rate limits)
 
-## Configuracion
+## Configuration
 
-1. Crea tu archivo `.env` a partir de `.env.example`.
-2. Ajusta al menos estas variables:
+1. Create your `.env` file from `.env.example`.
+2. Set at least these variables:
 
 ```env
 GITHUB_ORG=splent-io
-GITHUB_TOKEN=tu_token_aqui
+GITHUB_TOKEN=your_token_here
 ```
 
-## Ejecutar el proyecto
+## Run the project
 
-Instala dependencias:
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Inicia la API:
+Start the API:
 
 ```bash
 python run.py
 ```
 
-Por defecto Flask levanta en:
+By default, Flask runs on:
 
 - http://127.0.0.1:5000
 
-## Que abrir para ver paquetes
+## What to open to view packages
 
-### 1) Ver todos los paquetes
+### 1) View all packages
 
-Abre en navegador:
+Open in your browser:
 
 - http://127.0.0.1:5000/api/packages
 
 
 
-### 2) Ver un paquete por nombre
+### 2) View a package by name
 
-Abre en navegador (ejemplo):
+Open in your browser (example):
 
 - http://127.0.0.1:5000/api/packages/splent_feature_auth
 
 
-Si no existe, responde `404` con:
+If it does not exist, it returns `404` with:
 
 ```json
 {"error":"Package not found"}
