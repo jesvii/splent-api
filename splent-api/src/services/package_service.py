@@ -18,10 +18,10 @@ def extract_contract(pyproject_content):
 
 def normalize_package(repo, contract):
     return {
-        "id": repo.get("id"),
-        "name": repo.get("name"),
         "full_name": repo.get("full_name"),
         "html_url": repo.get("html_url"),
+        "id": repo.get("id"),
+        "name": repo.get("name"),
         "private": repo.get("private"),
         "updated_at": repo.get("updated_at"),
         "contract": {

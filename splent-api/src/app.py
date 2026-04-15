@@ -5,6 +5,7 @@ from src.routes.packages import packages_bp
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    app.json.sort_keys = False
     app.register_blueprint(packages_bp, url_prefix="/api")
 
     return app
