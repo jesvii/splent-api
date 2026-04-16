@@ -1,9 +1,30 @@
 import base64
 import requests
 from flask import current_app
+import time
 
 GITHUB_API_URL = "https://api.github.com"
 
+def check_rate_limit():
+    headers = _build_headers()
+    response = requests.get(f"{GITHUB_API_URL}/rate_limit", headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+        remaining = data['resources']['core']['remaining']  # Peticiones restantes
+        reset_time = data['resources']['core']['reset']     # Hora de reinicio
+        
+        # Si no quedan peticiones, esperamos hasta el siguiente ciclo
+        if remaining == 0:
+            reset_timestamp = reset_time
+            current_time = int(time.time())
+            wait_time = reset_timestamp - current_time + 10  # Esperamos 10 segundos después del reset
+            print(f"Rate limit alcanzado. Esperando {wait_time} segundos...")
+            time.sleep(wait_time)  # Esperamos hasta que el rate limit se reinicie
+        else:
+            print(f"Peticiones restantes: {remaining}")
+    else:
+        print("Error al verificar el rate limit")
 
 def _build_headers():
     token = current_app.config.get("GITHUB_TOKEN")
