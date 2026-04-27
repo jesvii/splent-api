@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from src.services.package_service import get_packages, get_package_by_name, publish_package, update_package, delete_package
+from src.services.package_service import get_packages, get_package_by_name, publish_package, update_package
 
 packages_bp = Blueprint("packages", __name__)
 
@@ -56,17 +56,3 @@ def edit_package(name):
             }
         ), 500   
     
-@packages_bp.delete("/packages/<name>")
-def delete_package_by_name(name):
-    try:
-        delete_package(name)
-        return jsonify({"message": "Package deleted successfully"}), 200
-    except FileNotFoundError:
-        return jsonify({"error": "Package not found"}), 404
-    except Exception as e:
-        return jsonify(
-            {
-                "error": "Error deleting package",
-                "details": str(e),
-            }
-        ), 500
