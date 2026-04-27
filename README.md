@@ -58,7 +58,7 @@ If it does not exist, it returns `404` with:
 {"error":"Package not found"}
 ```
 
-## How to test the new functionality
+## How to test the API
 
 ### 1) Make sure the API is running
 
