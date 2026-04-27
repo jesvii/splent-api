@@ -5,36 +5,6 @@ except ModuleNotFoundError:
 
 from src.clients.github_client import fetch_org_repos, fetch_repo_file
 
-def get_packages():
-    repos = fetch_org_repos()  # Obtiene los repositorios de la organización
-    packages = []
-
-    # Itera sobre cada repositorio
-    for repo in repos:
-        repo_name = repo.get("name")
-
-        # Verifica si tenemos acceso al archivo pyproject.toml en ese repositorio
-        pyproject_content = fetch_repo_file(repo_name, "pyproject.toml")
-
-        # Si no encontramos el archivo, continuamos con el siguiente repositorio
-        if pyproject_content is None:
-            continue
-
-        try:
-            # Extraemos el contrato del archivo pyproject.toml
-            contract = extract_contract(pyproject_content)
-        except Exception as e:
-            print(f"Error al extraer el contrato del repositorio {repo_name}: {e}")
-            continue  # Si hay un error al extraer el contrato, seguimos con el siguiente repositorio
-
-        # Si no se pudo extraer el contrato, continuamos con el siguiente repositorio
-        if not contract:
-            continue
-
-        # Normalizamos la información y la agregamos a la lista de paquetes
-        packages.append(normalize_package(repo, contract))
-
-    return packages
 
 def extract_contract(pyproject_content):
     data = tomllib.loads(pyproject_content)
@@ -63,24 +33,32 @@ def normalize_package(repo, contract):
 
 
 def get_packages():
-    repos = fetch_org_repos()
+    repos = fetch_org_repos()  # Obtiene los repositorios de la organización
     packages = []
 
+    # Itera sobre cada repositorio
     for repo in repos:
         repo_name = repo.get("name")
 
+        # Verifica si tenemos acceso al archivo pyproject.toml en ese repositorio
         pyproject_content = fetch_repo_file(repo_name, "pyproject.toml")
+
+        # Si no encontramos el archivo, continuamos con el siguiente repositorio
         if pyproject_content is None:
             continue
 
         try:
+            # Extraemos el contrato del archivo pyproject.toml
             contract = extract_contract(pyproject_content)
-        except Exception:
-            continue
+        except Exception as e:
+            print(f"Error al extraer el contrato del repositorio {repo_name}: {e}")
+            continue  # Si hay un error al extraer el contrato, seguimos con el siguiente repositorio
 
+        # Si no se pudo extraer el contrato, continuamos con el siguiente repositorio
         if not contract:
             continue
 
+        # Normalizamos la información y la agregamos a la lista de paquetes
         packages.append(normalize_package(repo, contract))
 
     return packages
