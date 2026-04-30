@@ -1,6 +1,7 @@
 # Splent API
 
-A Flask API to list packages from GitHub and read their contract from `pyproject.toml`.
+A Flask API used by the Splent marketplace and CLI to publish and list feature packages.
+Feature code lives in GitHub repositories. The API reads official packages from GitHub and stores marketplace registrations sent by the CLI.
 
 ## Requirements
 
@@ -16,6 +17,8 @@ A Flask API to list packages from GitHub and read their contract from `pyproject
 GITHUB_ORG=splent-io
 GITHUB_TOKEN=your_token_here
 ```
+
+`GITHUB_ORG` is the default organization used when no owner is provided. By default this is `splent-io`.
 
 ## Run the project
 
@@ -42,6 +45,7 @@ By default, Flask runs on:
 Open in your browser:
 
 - http://127.0.0.1:5000/api/packages
+- http://127.0.0.1:5000/api/packages?owner=splent-io
 
 
 
@@ -50,6 +54,7 @@ Open in your browser:
 Open in your browser (example):
 
 - http://127.0.0.1:5000/api/packages/splent_feature_auth
+- http://127.0.0.1:5000/api/packages/splent-io/splent_feature_auth
 
 
 If it does not exist, it returns `404` with:
@@ -87,12 +92,14 @@ Send a JSON body with:
 - `description`
 - `provides`
 - `requires`
-- `private` (optional, defaults to `false`)
+- `owner`
+- `repo_url` or `repository_url`
+- `metadata` (optional)
 
 Expected result:
 
-- The repo is created in GitHub
-- A `pyproject.toml` file is added with the contract
+- The package registration is stored in the marketplace API
+- The GitHub repository remains maintained by its owner
 - The API returns the package data
 
 ### 4) Test package updating
@@ -109,8 +116,7 @@ Update one or more of these fields:
 
 Expected result:
 
-- The existing repo is updated
-- The `pyproject.toml` contract is refreshed
+- The marketplace registration is updated
 - The API returns the updated package data
 
 ## Endpoints

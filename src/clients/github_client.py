@@ -5,6 +5,10 @@ import time
 
 GITHUB_API_URL = "https://api.github.com"
 
+
+def _resolve_org(org=None):
+    return org or current_app.config["GITHUB_ORG"]
+
 def check_rate_limit():
     headers = _build_headers()
     response = requests.get(f"{GITHUB_API_URL}/rate_limit", headers=headers)
@@ -39,9 +43,8 @@ def _build_headers():
     return headers
 
 
-def fetch_org_repos():
-    org = current_app.config["GITHUB_ORG"]
-
+def fetch_org_repos(org=None):
+    org = _resolve_org(org)
     response = requests.get(
         f"{GITHUB_API_URL}/orgs/{org}/repos",
         headers=_build_headers(),
@@ -51,9 +54,23 @@ def fetch_org_repos():
     return response.json()
 
 
-def fetch_repo_file(repo_name, path):
-    org = current_app.config["GITHUB_ORG"]
+def fetch_repo_metadata(repo_name, org=None):
+    org = _resolve_org(org)
+    response = requests.get(
+        f"{GITHUB_API_URL}/repos/{org}/{repo_name}",
+        headers=_build_headers(),
+        timeout=10,
+    )
 
+    if response.status_code == 404:
+        return None
+
+    response.raise_for_status()
+    return response.json()
+
+
+def fetch_repo_file(repo_name, path, org=None):
+    org = _resolve_org(org)
     response = requests.get(
         f"{GITHUB_API_URL}/repos/{org}/{repo_name}/contents/{path}",
         headers=_build_headers(),

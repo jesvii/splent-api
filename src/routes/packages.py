@@ -6,12 +6,14 @@ packages_bp = Blueprint("packages", __name__)
 
 @packages_bp.get("/packages")
 def packages():
-    return jsonify(get_packages()), 200
+    owner = request.args.get("owner")
+    return jsonify(get_packages(owner=owner)), 200
 
 
-@packages_bp.get("/packages/<name>")
+@packages_bp.get("/packages/<path:name>")
 def package_by_name(name):
-    package = get_package_by_name(name)
+    owner = request.args.get("owner")
+    package = get_package_by_name(name, owner=owner)
 
     if package is None:
         return jsonify({"error": "Package not found"}), 404
@@ -23,6 +25,9 @@ def create_package():
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "Request body must be valid JSON"}), 400
+    owner = request.args.get("owner")
+    if owner and "owner" not in data:
+        data["owner"] = owner
     try:
         package = publish_package(data)
         return jsonify(package), 201
@@ -36,11 +41,14 @@ def create_package():
             }
         ), 500   
     
-@packages_bp.put("/packages/<name>")
+@packages_bp.put("/packages/<path:name>")
 def edit_package(name):
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "Request body must be valid JSON"}), 400
+    owner = request.args.get("owner")
+    if owner and "owner" not in data:
+        data["owner"] = owner
     try:
         package = update_package(name, data)
         return jsonify(package), 200
