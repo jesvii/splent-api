@@ -48,7 +48,6 @@ def _get_package_from_registry(name, owner=None):
         if name in {
             package.get("name"),
             package.get("full_name"),
-            package.get("feature_ref"),
             package.get("repository"),
         }:
             return package
@@ -71,10 +70,10 @@ def normalize_package(repo, contract):
     if not owner and isinstance(repository, str) and "/" in repository:
         owner = repository.split("/", 1)[0]
     name = repo.get("name")
-    feature_ref = repository or name
+    full_name = repository or name
 
     return {
-        "feature_ref": feature_ref,
+        "full_name": full_name,
         "owner": owner,
         "name": name,
         "repository": repository,
@@ -173,14 +172,14 @@ def get_package_by_name(name, owner=None):
         return normalize_package(repo_metadata, contract)
 
     for package in _packages_from_github(owner=owner):
-        if name in {package.get("name"), package.get("full_name"), package.get("feature_ref")}:
+        if name in {package.get("name"), package.get("full_name")}:
             return package
 
     return None
 
 
 def _package_key(data):
-    for field in ("feature_ref", "full_name", "repository", "name"):
+    for field in ("full_name", "repository", "name"):
         value = data.get(field)
         if isinstance(value, str) and value.strip():
             return value.strip()
@@ -261,7 +260,7 @@ def _owner_from_data(data):
     if repo_url_owner:
         return repo_url_owner
 
-    for field in ("full_name", "feature_ref", "repository"):
+    for field in ("full_name", "repository"):
         value = data.get(field)
         if isinstance(value, str) and "/" in value:
             return value.split("/", 1)[0].strip()
@@ -274,7 +273,7 @@ def _name_from_data(data):
     if isinstance(name, str) and name.strip():
         return name.strip()
 
-    for field in ("repository", "feature_ref", "full_name"):
+    for field in ("repository", "full_name"):
         value = data.get(field)
         if isinstance(value, str) and value.strip():
             ref = _strip_version(value)
@@ -283,11 +282,11 @@ def _name_from_data(data):
     raise ValueError("Package name cannot be empty")
 
 
-def _feature_ref_from_data(data, owner, name):
-    feature_ref = data.get("feature_ref") or data.get("full_name") or data.get("repository") or name
-    if not isinstance(feature_ref, str) or not feature_ref.strip():
-        raise ValueError("Feature ref cannot be empty")
-    return _ensure_owner_prefix(owner, feature_ref)
+def _full_name_from_data(data, owner, name):
+    full_name = data.get("full_name") or data.get("repository") or name
+    if not isinstance(full_name, str) or not full_name.strip():
+        raise ValueError("Full name cannot be empty")
+    return _ensure_owner_prefix(owner, full_name)
 
 
 def _repo_url_from_data(data, repository):
@@ -318,12 +317,12 @@ def _normalize_package_data(data):
     requires = _get_requires(data)
     owner = _owner_from_data(data)
     name = _name_from_data(data)
-    feature_ref = _feature_ref_from_data(data, owner, name)
-    repository = _repository_from_ref(owner, data.get("repository") or feature_ref)
+    full_name = _full_name_from_data(data, owner, name)
+    repository = _repository_from_ref(owner, data.get("repository") or full_name)
     repo_url = _repo_url_from_data(data, repository)
 
     package_data = {
-        "feature_ref": feature_ref,
+        "full_name": full_name,
         "owner": owner,
         "name": name,
         "repository": repository,
