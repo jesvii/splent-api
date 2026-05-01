@@ -36,7 +36,7 @@ def save_packages_to_file(packages):
 
 def _packages_from_registry(owner=None):
     packages = load_packages_from_file()
-    values = list(packages.values())
+    values = [_normalize_registry_package(package) for package in packages.values()]
     if owner:
         return [package for package in values if package.get("owner") == owner]
     return values
@@ -65,27 +65,30 @@ def extract_contract(pyproject_content):
 
 
 def normalize_package(repo, contract):
-    repository_url = repo.get("html_url")
-    full_name = repo.get("full_name")
+    repo_url = repo.get("html_url")
+    repository = repo.get("full_name")
     owner = (repo.get("owner") or {}).get("login")
-    if not owner and isinstance(full_name, str) and "/" in full_name:
-        owner = full_name.split("/", 1)[0]
+    if not owner and isinstance(repository, str) and "/" in repository:
+        owner = repository.split("/", 1)[0]
+    name = repo.get("name")
+    feature_ref = repository or name
+
     return {
-        "full_name": full_name,
-        "html_url": repo.get("html_url"),
-        "id": repo.get("id"),
-        "name": repo.get("name"),
-        "feature_ref": full_name or repo.get("name"),
+        "feature_ref": feature_ref,
         "owner": owner,
-        "private": repo.get("private"),
-        "updated_at": repo.get("updated_at"),
-        "repository_url": repository_url,
-        "repo_url": repository_url,
-        "repository": full_name or repo.get("name"),
+        "name": name,
+        "repository": repository,
+        "repo_url": repo_url,
         "contract": {
             "description": contract.get("description"),
             "provides": contract.get("provides", {}),
             "requires": contract.get("requires", {}),
+        },
+        "metadata": {
+            "github_id": repo.get("id"),
+            "private": repo.get("private"),
+            "updated_at": repo.get("updated_at"),
+            "source": "github",
         },
     }
 
@@ -177,7 +180,7 @@ def get_package_by_name(name, owner=None):
 
 
 def _package_key(data):
-    for field in ("feature_ref", "full_name", "name"):
+    for field in ("feature_ref", "full_name", "repository", "name"):
         value = data.get(field)
         if isinstance(value, str) and value.strip():
             return value.strip()
@@ -212,22 +215,51 @@ def _get_requires(data):
 
 
 def _get_repository_url(data):
-    return data.get("repository_url") or data.get("repo_url") or data.get("html_url")
+    github = data.get("github") if isinstance(data.get("github"), dict) else {}
+    return data.get("repo_url") or data.get("repository_url") or data.get("html_url") or github.get("url")
 
 
-def _repository_ref(owner, package_ref):
-    ref = package_ref
+def _strip_version(package_ref):
+    ref = package_ref.strip()
     if "@" in ref:
         ref = ref.split("@", 1)[0]
+    return ref
+
+
+def _ensure_owner_prefix(owner, package_ref):
+    ref = package_ref.strip()
     if "/" not in ref:
         ref = f"{owner}/{ref}"
     return ref
+
+
+def _repository_from_ref(owner, package_ref):
+    return _ensure_owner_prefix(owner, _strip_version(package_ref))
+
+
+def _owner_from_repo_url(repo_url):
+    if not isinstance(repo_url, str):
+        return None
+
+    marker = "github.com/"
+    if marker not in repo_url:
+        return None
+
+    path = repo_url.split(marker, 1)[1].strip("/")
+    if "/" not in path:
+        return None
+
+    return path.split("/", 1)[0].strip() or None
 
 
 def _owner_from_data(data):
     owner = data.get("owner")
     if isinstance(owner, str) and owner.strip():
         return owner.strip()
+
+    repo_url_owner = _owner_from_repo_url(_get_repository_url(data))
+    if repo_url_owner:
+        return repo_url_owner
 
     for field in ("full_name", "feature_ref", "repository"):
         value = data.get(field)
@@ -237,42 +269,75 @@ def _owner_from_data(data):
     raise ValueError("Owner cannot be empty")
 
 
+def _name_from_data(data):
+    name = data.get("name")
+    if isinstance(name, str) and name.strip():
+        return name.strip()
+
+    for field in ("repository", "feature_ref", "full_name"):
+        value = data.get(field)
+        if isinstance(value, str) and value.strip():
+            ref = _strip_version(value)
+            return ref.rsplit("/", 1)[-1]
+
+    raise ValueError("Package name cannot be empty")
+
+
+def _feature_ref_from_data(data, owner, name):
+    feature_ref = data.get("feature_ref") or data.get("full_name") or data.get("repository") or name
+    if not isinstance(feature_ref, str) or not feature_ref.strip():
+        raise ValueError("Feature ref cannot be empty")
+    return _ensure_owner_prefix(owner, feature_ref)
+
+
+def _repo_url_from_data(data, repository):
+    repo_url = _get_repository_url(data)
+    if isinstance(repo_url, str) and repo_url.strip():
+        return repo_url.strip()
+    return f"https://github.com/{repository}"
+
+
+def _metadata_from_data(data, description):
+    metadata = data.get("metadata") if isinstance(data.get("metadata"), dict) else {}
+    metadata = dict(metadata)
+    metadata.setdefault("description", description)
+    return metadata
+
+
+def _normalize_registry_package(data):
+    try:
+        return _normalize_package_data(data)
+    except ValueError:
+        return data
+
+
 def _normalize_package_data(data):
     contract = _get_contract(data)
     description = _get_description(data)
     provides = _get_provides(data)
     requires = _get_requires(data)
     owner = _owner_from_data(data)
-    repository_url = _get_repository_url(data)
-    full_name = data.get("full_name") or data.get("feature_ref") or data.get("name")
-    if isinstance(full_name, str) and "/" not in full_name:
-        full_name = f"{owner}/{full_name}"
-    feature_ref = data.get("feature_ref") or full_name
-    if isinstance(feature_ref, str) and "/" not in feature_ref:
-        feature_ref = f"{owner}/{feature_ref}"
-    repository = data.get("repository") or _repository_ref(owner, feature_ref)
+    name = _name_from_data(data)
+    feature_ref = _feature_ref_from_data(data, owner, name)
+    repository = _repository_from_ref(owner, data.get("repository") or feature_ref)
+    repo_url = _repo_url_from_data(data, repository)
 
     package_data = {
-        "name": data["name"].strip(),
-        "full_name": full_name,
         "feature_ref": feature_ref,
         "owner": owner,
+        "name": name,
         "repository": repository,
-        "repository_url": repository_url,
-        "repo_url": repository_url,
-        "namespace": data.get("namespace"),
-        "description": description,
-        "provides": provides,
-        "requires": requires,
+        "repo_url": repo_url,
         "contract": {
             **contract,
             "description": description,
             "provides": provides,
             "requires": requires,
         },
+        "metadata": _metadata_from_data(data, description),
     }
 
-    for field in ("github", "metadata"):
+    for field in ("github", "namespace"):
         if field in data:
             package_data[field] = data[field]
 
@@ -280,23 +345,13 @@ def _normalize_package_data(data):
 
 
 def validate_package_data(data, require_name=True):
-    required_fields = []
-
     if require_name:
-        required_fields.insert(0, "name")
-
-    for field in required_fields:
-        if field not in data:
-            raise ValueError(f"Missing required field: {field}")
-        
-    if require_name:
-        if not isinstance(data["name"], str) or not data["name"].strip():
-            raise ValueError("Package name cannot be empty")
+        _name_from_data(data)
 
     description = _get_description(data)
     provides = _get_provides(data)
     requires = _get_requires(data)
-    repository_url = _get_repository_url(data)
+    repo_url = _get_repository_url(data)
     _owner_from_data(data)
 
     if not isinstance(description, str) or not description.strip():
@@ -308,7 +363,7 @@ def validate_package_data(data, require_name=True):
     if not isinstance(requires, dict):
         raise ValueError("Requires must be an object")
 
-    if not isinstance(repository_url, str) or not repository_url.strip():
+    if not isinstance(repo_url, str) or not repo_url.strip():
         raise ValueError("Repository URL cannot be empty")
     
 
@@ -336,9 +391,9 @@ def update_package(name, data):
         **data,
         "name": data.get("name", existing_package.get("name", name)),
         "owner": data.get("owner", existing_package.get("owner", "")),
-        "repository_url": data.get(
-            "repository_url",
-            data.get("repo_url", existing_package.get("repository_url", "")),
+        "repo_url": data.get(
+            "repo_url",
+            data.get("repository_url", existing_package.get("repo_url", existing_package.get("repository_url", ""))),
         ),
         "description": data.get(
             "description", existing_package.get("description", existing_package["contract"].get("description", ""))

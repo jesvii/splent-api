@@ -93,7 +93,7 @@ Send a JSON body with:
 - `provides`
 - `requires`
 - `owner`
-- `repo_url` or `repository_url`
+- `repo_url`
 - `metadata` (optional)
 
 Expected result:
