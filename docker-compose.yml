@@ -1,0 +1,11 @@
+services:
+  splent-api:
+    build: .
+    container_name: splent-api
+    restart: always
+    ports:
+      - "80:80"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/data

@@ -12,7 +12,7 @@ from src.clients.github_client import (
     fetch_repo_metadata,
 )
 
-PACKAGES_FILE = "packages.json"
+PACKAGES_FILE = os.getenv("PACKAGES_FILE", "packages.json")
 
 
 def load_packages_from_file():

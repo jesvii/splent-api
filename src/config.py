@@ -10,3 +10,5 @@ class Config:
     DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///app.db")
     GITHUB_ORG = os.getenv("GITHUB_ORG", "splent-io")
     GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+    SPLENT_API_TOKEN = os.getenv("SPLENT_API_TOKEN")
+    PACKAGES_FILE = os.getenv("PACKAGES_FILE", "packages.json")
