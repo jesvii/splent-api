@@ -139,6 +139,24 @@ Expected response:
 {"status":"ok"}
 ```
 
+## Unit tests
+
+The unit tests are located in `tests/unit` and use `pytest`.
+
+- `tests/unit/test_app.py` tests the Flask app setup, health endpoint, and Bearer token authentication.
+- `tests/unit/routes/test_packages.py` tests the package HTTP routes with mocked service functions.
+- `tests/unit/services/test_package_service.py` tests package normalization, publishing, updating, and registry precedence using temporary files.
+- `tests/unit/conftest.py` defines reusable pytest fixtures for the Flask app and test client.
+
+Run the tests with:
+
+```bash
+python3 -m pytest tests/unit
+```
+
+The tests use fake package data, mocks, and temporary files. They do not call
+GitHub, Docker, the marketplace, or the real package registry file.
+
 ## How to test the API
 
 ### 1) Make sure the API is running
