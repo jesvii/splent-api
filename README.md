@@ -182,39 +182,31 @@ Open these links in the browser or call them with curl:
 
 ### 3) Test package publishing
 
-Use Postman, Thunder Client, Insomnia, curl, or any API client to send a `POST` request to:
+Use `curl`, Postman, Thunder Client, Insomnia, or any API client to send a
+`POST` request to:
 
 - http://127.0.0.1:5000/api/packages
 
-Send a JSON body with:
+Example with `curl`:
 
-- `full_name`
-- `name`
-- `owner`
-- `repository`
-- `repo_url`
-- `contract`
-- `metadata` (optional)
-
-Example:
-
-```json
-{
-  "full_name": "jesvii/splent_feature_orcid@v1.0.0",
-  "owner": "jesvii",
-  "name": "splent_feature_orcid",
-  "repository": "jesvii/splent_feature_orcid",
-  "repo_url": "https://github.com/jesvii/splent_feature_orcid",
-  "contract": {
-    "description": "ORCID feature",
-    "provides": {},
-    "requires": {}
-  },
-  "metadata": {
-    "source": "splent-cli",
-    "feature_version": "v1.0.0"
-  }
-}
+```bash
+curl -X POST http://127.0.0.1:5000/api/packages \
+  -H "Content-Type: application/json" \
+  -d '{
+    "full_name": "fake-owner/splent_feature_demo",
+    "owner": "fake-owner",
+    "name": "splent_feature_demo",
+    "repository": "fake-owner/splent_feature_demo",
+    "repo_url": "https://github.com/fake-owner/splent_feature_demo",
+    "contract": {
+      "description": "Demo feature",
+      "provides": {},
+      "requires": {}
+    },
+    "metadata": {
+      "source": "manual-test"
+    }
+  }'
 ```
 
 Expected result:
@@ -225,15 +217,33 @@ Expected result:
 
 ### 4) Test package updating
 
-Send a `PUT` request to:
+Send a `PUT` request to update an existing package:
 
 - http://127.0.0.1:5000/api/packages/<name>
 
-Update one or more of these fields:
+Example with `curl`:
 
-- `contract`
-- `metadata`
-- `repo_url`
+```bash
+curl -X PUT http://127.0.0.1:5000/api/packages/splent_feature_demo \
+  -H "Content-Type: application/json" \
+  -d '{
+    "owner": "fake-owner",
+    "description": "Updated demo feature",
+    "provides": {
+      "demo": "client"
+    }
+  }'
+```
+
+If `SPLENT_API_TOKEN` is configured, include the Bearer token in write
+requests:
+
+```bash
+curl -X POST http://127.0.0.1:5000/api/packages \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $SPLENT_API_TOKEN" \
+  -d '{ ... }'
+```
 
 Expected result:
 
