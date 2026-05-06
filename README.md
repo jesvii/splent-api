@@ -93,13 +93,32 @@ inside the VM, mounted in the container as `/data/packages.json`.
 
 ## What to open to view packages
 
+If `SPLENT_API_TOKEN` is configured in `.env`, all `/api/...` endpoints require
+this header:
+
+```http
+Authorization: Bearer <SPLENT_API_TOKEN>
+```
+
+Opening an `/api/...` URL directly in the browser does not send that header, so
+the API will return:
+
+```json
+{"error":"Unauthorized"}
+```
+
+Use `curl`, Postman, Thunder Client, Insomnia, or another API client when the
+token is enabled. If you change `.env`, restart the API before testing again.
+
 ### 1) View all packages
 
-Use the Bearer token if `SPLENT_API_TOKEN` is configured:
+Load the token from `.env` and call the local development API:
 
 ```bash
+source .env
+
 curl -H "Authorization: Bearer $SPLENT_API_TOKEN" \
-  http://127.0.0.1/api/packages
+  http://127.0.0.1:5000/api/packages
 ```
 
 Local development URL:
@@ -114,7 +133,16 @@ Production URL inside the VM:
 
 ### 2) View a package by name
 
-Open in your browser or call with curl:
+Call with curl when `SPLENT_API_TOKEN` is configured:
+
+```bash
+source .env
+
+curl -H "Authorization: Bearer $SPLENT_API_TOKEN" \
+  http://127.0.0.1:5000/api/packages/splent_feature_auth
+```
+
+Endpoint URLs:
 
 - http://127.0.0.1:5000/api/packages/splent_feature_auth
 - http://127.0.0.1:5000/api/packages/splent-io/splent_feature_auth
