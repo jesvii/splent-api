@@ -253,6 +253,7 @@ Expected result:
 ## Endpoints
 
 - `GET /health` - Health check
+- `GET /api/auth/check` - Validate the configured API Bearer token
 - `GET /api/packages` - List all packages
 - `GET /api/packages/<name>` - Get a specific package
 - `POST /api/packages` - Publish a new package
