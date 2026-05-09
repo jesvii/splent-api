@@ -4,8 +4,10 @@ services:
     container_name: splent-api
     restart: always
     ports:
-      - "80:80"
+      - "${SPLENT_API_HOST_PORT:-5000}:80"
     env_file:
       - .env
+    environment:
+      PACKAGES_FILE: /data/packages.json
     volumes:
       - ./data:/data

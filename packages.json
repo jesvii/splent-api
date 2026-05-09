@@ -1,0 +1,152 @@
+{
+  "splent-io/splent_feature_demo_marketplace": {
+    "full_name": "splent-io/splent_feature_demo_marketplace",
+    "owner": "splent-io",
+    "name": "splent_feature_demo_marketplace",
+    "repository": "splent-io/splent_feature_demo_marketplace",
+    "repo_url": "https://github.com/splent-io/splent_feature_demo_marketplace",
+    "contract": {
+      "description": "demo_marketplace feature",
+      "provides": {
+        "routes": [
+          "/demo_marketplace"
+        ],
+        "blueprints": [],
+        "models": [],
+        "commands": [],
+        "hooks": [
+          "layout.authenticated_sidebar",
+          "layout.scripts"
+        ],
+        "services": [],
+        "signals": [],
+        "translations": [],
+        "docker": []
+      },
+      "requires": {
+        "features": [],
+        "env_vars": [],
+        "signals": []
+      },
+      "extensible": {
+        "services": [],
+        "templates": [
+          "demo_marketplace/index.html"
+        ],
+        "models": [],
+        "hooks": [
+          "layout.authenticated_sidebar",
+          "layout.scripts"
+        ],
+        "routes": false
+      },
+      "docker": {
+        "services": [],
+        "ports": [],
+        "volumes": [],
+        "networks": [],
+        "build": false,
+        "healthcheck": false,
+        "depends_on_services": []
+      }
+    },
+    "metadata": {
+      "project_name": "splent_feature_demo_marketplace",
+      "version": "0.0.1",
+      "feature_version": null,
+      "description": null,
+      "workspace_path": "/workspace/splent_feature_demo_marketplace",
+      "pyproject_present": true,
+      "source": "splent-cli"
+    },
+    "github": {
+      "owner": "splent-io",
+      "repo": "splent_feature_demo_marketplace",
+      "repository": "splent-io/splent_feature_demo_marketplace",
+      "url": "https://github.com/splent-io/splent_feature_demo_marketplace"
+    },
+    "namespace": "splent_io"
+  },
+  "splent-io/splent_feature_demo": {
+    "full_name": "splent-io/splent_feature_demo",
+    "owner": "splent-io",
+    "name": "splent_feature_demo",
+    "repository": "splent-io/splent_feature_demo",
+    "repo_url": "https://github.com/splent-io/splent_feature_demo",
+    "contract": {
+      "description": "demo feature",
+      "provides": {
+        "routes": [
+          "/demo"
+        ],
+        "blueprints": [],
+        "models": [
+          "Demo"
+        ],
+        "commands": [
+          "hello"
+        ],
+        "hooks": [
+          "layout.authenticated_sidebar",
+          "layout.scripts"
+        ],
+        "services": [
+          "DemoService"
+        ],
+        "signals": [
+          "item-created"
+        ],
+        "translations": [],
+        "docker": []
+      },
+      "requires": {
+        "features": [],
+        "env_vars": [],
+        "signals": [
+          "user-registered"
+        ]
+      },
+      "extensible": {
+        "services": [
+          "DemoService"
+        ],
+        "templates": [
+          "demo/index.html"
+        ],
+        "models": [
+          "Demo"
+        ],
+        "hooks": [
+          "layout.authenticated_sidebar",
+          "layout.scripts"
+        ],
+        "routes": false
+      },
+      "docker": {
+        "services": [],
+        "ports": [],
+        "volumes": [],
+        "networks": [],
+        "build": false,
+        "healthcheck": false,
+        "depends_on_services": []
+      }
+    },
+    "metadata": {
+      "project_name": "splent_feature_demo",
+      "version": "0.0.1",
+      "feature_version": null,
+      "description": null,
+      "workspace_path": "/workspace/splent_feature_demo",
+      "pyproject_present": true,
+      "source": "splent-cli"
+    },
+    "github": {
+      "owner": "splent-io",
+      "repo": "splent_feature_demo",
+      "repository": "splent-io/splent_feature_demo",
+      "url": "https://github.com/splent-io/splent_feature_demo"
+    },
+    "namespace": "splent_io"
+  }
+}

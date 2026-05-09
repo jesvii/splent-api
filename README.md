@@ -54,7 +54,8 @@ By default, Flask runs on:
 
 ## Docker deployment
 
-The domain points to port `80`, so Docker Compose exposes the API on port `80`.
+Docker Compose exposes the API on host port `5000` by default so it matches the
+CLI default `SPLENT_API_URL=http://127.0.0.1:5000`.
 
 Start or rebuild the service:
 
@@ -91,7 +92,7 @@ The marketplace registry file is stored in:
 
 inside the VM, mounted in the container as `/data/packages.json`.
 
-## What to open to view packages
+## View packages
 
 If `SPLENT_API_TOKEN` is configured in `.env`, all `/api/...` endpoints require
 this header:
@@ -110,6 +111,13 @@ the API will return:
 Use `curl`, Postman, Thunder Client, Insomnia, or another API client when the
 token is enabled. If you change `.env`, restart the API before testing again.
 
+To open `/api/...` URLs directly in the browser, leave `SPLENT_API_TOKEN` empty
+in `.env` and restart the API:
+
+```env
+SPLENT_API_TOKEN=
+```
+
 ### 1) View all packages
 
 Load the token from `.env` and call the local development API:
@@ -121,12 +129,12 @@ curl -H "Authorization: Bearer $SPLENT_API_TOKEN" \
   http://127.0.0.1:5000/api/packages
 ```
 
-Local development URL:
+Local development endpoint:
 
 - http://127.0.0.1:5000/api/packages
 - http://127.0.0.1:5000/api/packages?owner=splent-io
 
-Production URL inside the VM:
+Production endpoint inside the VM:
 
 - http://127.0.0.1/api/packages
 - http://127.0.0.1/api/packages?owner=splent-io
@@ -203,7 +211,9 @@ docker compose up -d --build
 
 ### 2) Test the read endpoints
 
-Open these links in the browser or call them with curl:
+If `SPLENT_API_TOKEN` is empty, open these links in the browser. If it is set,
+call them with `curl`, Postman, Thunder Client, or Insomnia using the Bearer
+token header.
 
 - http://127.0.0.1:5000/api/packages
 - http://127.0.0.1:5000/api/packages/splent_feature_auth
