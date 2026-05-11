@@ -5,12 +5,6 @@ from src.config import Config
 from src.routes.packages import packages_bp
 
 
-def is_public_package_read():
-    return request.method == "GET" and (
-        request.path == "/api/packages" or request.path.startswith("/api/packages/")
-    )
-
-
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -27,7 +21,7 @@ def create_app():
     @app.before_request
     def require_bearer_token():
         token = app.config.get("SPLENT_API_TOKEN")
-        if not token or not request.path.startswith("/api/") or is_public_package_read():
+        if not token or not request.path.startswith("/api/"):
             return None
 
         auth_header = request.headers.get("Authorization", "")
