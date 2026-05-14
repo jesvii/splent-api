@@ -9,6 +9,7 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     app.json.sort_keys = False
+    app.json.compact = False
 
     @app.get("/health")
     def health():
