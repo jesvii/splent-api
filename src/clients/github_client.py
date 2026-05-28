@@ -30,37 +30,36 @@ def check_rate_limit():
     else:
         print("Error al verificar el rate limit")
 
-def _build_headers():
+def _build_headers(include_token=True):
     token = current_app.config.get("GITHUB_TOKEN")
 
     headers = {
         "Accept": "application/vnd.github+json"
     }
 
-    if token:
+    if include_token and token:
         headers["Authorization"] = f"Bearer {token}"
 
     return headers
 
 
+def _get(url):
+    response = requests.get(url, headers=_build_headers(), timeout=10)
+    if response.status_code in {401, 403} and current_app.config.get("GITHUB_TOKEN"):
+        response = requests.get(url, headers=_build_headers(include_token=False), timeout=10)
+    return response
+
+
 def fetch_org_repos(org=None):
     org = _resolve_org(org)
-    response = requests.get(
-        f"{GITHUB_API_URL}/orgs/{org}/repos",
-        headers=_build_headers(),
-        timeout=10
-    )
+    response = _get(f"{GITHUB_API_URL}/orgs/{org}/repos")
     response.raise_for_status()
     return response.json()
 
 
 def fetch_repo_metadata(repo_name, org=None):
     org = _resolve_org(org)
-    response = requests.get(
-        f"{GITHUB_API_URL}/repos/{org}/{repo_name}",
-        headers=_build_headers(),
-        timeout=10,
-    )
+    response = _get(f"{GITHUB_API_URL}/repos/{org}/{repo_name}")
 
     if response.status_code == 404:
         return None
@@ -71,11 +70,7 @@ def fetch_repo_metadata(repo_name, org=None):
 
 def fetch_repo_file(repo_name, path, org=None):
     org = _resolve_org(org)
-    response = requests.get(
-        f"{GITHUB_API_URL}/repos/{org}/{repo_name}/contents/{path}",
-        headers=_build_headers(),
-        timeout=10
-    )
+    response = _get(f"{GITHUB_API_URL}/repos/{org}/{repo_name}/contents/{path}")
 
     if response.status_code == 404:
         return None
