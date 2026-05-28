@@ -1,18 +1,25 @@
 from src.app import create_app
 
 
-def test_index_ok(client):
-    res = client.get("/")
+def test_index_returns_packages(client, monkeypatch):
+    packages = [
+        {
+            "full_name": "fake-owner/splent_feature_demo",
+            "owner": "fake-owner",
+            "name": "splent_feature_demo",
+        }
+    ]
+
+    def fake_get_packages(owner=None):
+        assert owner == "fake-owner"
+        return packages
+
+    monkeypatch.setattr("src.app.get_packages", fake_get_packages)
+
+    res = client.get("/?owner=fake-owner")
 
     assert res.status_code == 200
-    assert res.get_json() == {
-        "name": "Splent API",
-        "status": "ok",
-        "endpoints": {
-            "health": "/health",
-            "packages": "/api/packages",
-        },
-    }
+    assert res.get_json() == packages
 
 
 def test_health_ok(client):

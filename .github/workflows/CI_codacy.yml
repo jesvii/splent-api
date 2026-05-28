@@ -64,7 +64,7 @@ jobs:
         if: github.event_name == 'push' && matrix.python-version == '3.12'
         uses: codacy/codacy-analysis-cli-action@master
         with:
-          directory: src
+          directory: ${{ github.workspace }}/src
           output: results.sarif
           format: sarif
           gh-code-scanning-compat: true

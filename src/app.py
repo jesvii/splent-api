@@ -3,6 +3,7 @@ from hmac import compare_digest
 from flask import Flask, jsonify, request
 from src.config import Config
 from src.routes.packages import packages_bp
+from src.services.package_service import get_packages
 
 
 def create_app():
@@ -13,16 +14,8 @@ def create_app():
 
     @app.get("/")
     def index():
-        return jsonify(
-            {
-                "name": "Splent API",
-                "status": "ok",
-                "endpoints": {
-                    "health": "/health",
-                    "packages": "/api/packages",
-                },
-            }
-        ), 200
+        owner = request.args.get("owner")
+        return jsonify(get_packages(owner=owner)), 200
 
     @app.get("/health")
     def health():
