@@ -1,6 +1,5 @@
 .env
 data/
-packages.json
 .venv
 venv
 __pycache__
@@ -10,5 +9,4 @@ __pycache__
 .git
 .gitignore
 data
-packages.json
 tests
