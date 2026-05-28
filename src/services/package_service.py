@@ -13,17 +13,25 @@ from src.clients.github_client import (
 )
 
 PACKAGES_FILE = os.getenv("PACKAGES_FILE", "packages.json")
+DEFAULT_PACKAGES_FILE = "packages.json"
 
 
-def load_packages_from_file():
-    if not os.path.exists(PACKAGES_FILE):
-        return {}
-
+def _load_json_file(path):
     try:
-        with open(PACKAGES_FILE, "r") as f:
+        with open(path, "r") as f:
             return json.load(f)
     except Exception:
         return {}
+
+
+def load_packages_from_file():
+    if os.path.exists(PACKAGES_FILE):
+        return _load_json_file(PACKAGES_FILE)
+
+    if PACKAGES_FILE != DEFAULT_PACKAGES_FILE and os.path.exists(DEFAULT_PACKAGES_FILE):
+        return _load_json_file(DEFAULT_PACKAGES_FILE)
+
+    return {}
 
 
 def save_packages_to_file(packages):

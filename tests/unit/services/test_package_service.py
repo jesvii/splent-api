@@ -124,6 +124,25 @@ def test_get_packages_prefers_registry_data(packages_file, monkeypatch):
     assert packages[0]["contract"]["description"] == "Registry description"
 
 
+def test_load_packages_uses_default_file_when_configured_file_missing(
+    tmp_path,
+    monkeypatch,
+):
+    configured_file = tmp_path / "data" / "packages.json"
+    default_file = tmp_path / "packages.json"
+    package = make_package()
+
+    default_file.write_text(json.dumps({"fake-owner/splent_feature_demo": package}))
+
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(package_service, "PACKAGES_FILE", str(configured_file))
+    monkeypatch.setattr(package_service, "DEFAULT_PACKAGES_FILE", "packages.json")
+
+    assert package_service.load_packages_from_file() == {
+        "fake-owner/splent_feature_demo": package
+    }
+
+
 def test_update_package(packages_file):
     package_service.publish_package(make_package())
 
