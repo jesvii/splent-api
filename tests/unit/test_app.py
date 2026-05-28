@@ -1,6 +1,20 @@
 from src.app import create_app
 
 
+def test_index_ok(client):
+    res = client.get("/")
+
+    assert res.status_code == 200
+    assert res.get_json() == {
+        "name": "Splent API",
+        "status": "ok",
+        "endpoints": {
+            "health": "/health",
+            "packages": "/api/packages",
+        },
+    }
+
+
 def test_health_ok(client):
     res = client.get("/health")
 

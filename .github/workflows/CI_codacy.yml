@@ -1,0 +1,77 @@
+name: Codacy CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  build:
+    name: Backend quality checks
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version:
+          - "3.11"
+          - "3.12"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install coverage pip-audit codacy-coverage
+
+      - name: Check for outdated dependencies
+        run: pip list --outdated
+
+      - name: Security audit with pip-audit
+        run: pip-audit || true
+
+      - name: Run tests
+        run: python -m pytest tests/unit
+        env:
+          FLASK_ENV: testing
+
+      - name: Upload coverage to Codacy
+        if: github.event_name == 'push' && matrix.python-version == '3.12'
+        run: |
+          coverage run --source=src -m pytest tests/unit
+          coverage xml
+          python-codacy-coverage -r coverage.xml
+        env:
+          FLASK_ENV: testing
+          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_TOKEN }}
+
+      - name: Run Codacy Analysis CLI
+        if: github.event_name == 'push' && matrix.python-version == '3.12'
+        uses: codacy/codacy-analysis-cli-action@master
+        with:
+          directory: src
+          output: results.sarif
+          format: sarif
+          gh-code-scanning-compat: true
+          max-allowed-issues: 2147483647
+
+      - name: Upload SARIF results
+        if: github.event_name == 'push' && matrix.python-version == '3.12'
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: results.sarif

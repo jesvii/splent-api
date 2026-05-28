@@ -11,6 +11,19 @@ def create_app():
     app.json.sort_keys = False
     app.json.compact = False
 
+    @app.get("/")
+    def index():
+        return jsonify(
+            {
+                "name": "Splent API",
+                "status": "ok",
+                "endpoints": {
+                    "health": "/health",
+                    "packages": "/api/packages",
+                },
+            }
+        ), 200
+
     @app.get("/health")
     def health():
         return jsonify({"status": "ok"}), 200
