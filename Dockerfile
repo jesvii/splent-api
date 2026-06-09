@@ -6,6 +6,7 @@ ENV FLASK_APP=run.py
 ENV FLASK_ENV=production
 ENV PORT=80
 ENV PACKAGES_FILE=/data/packages.json
+ENV PACKAGE_SOURCES=github,registry
 
 WORKDIR /app
 

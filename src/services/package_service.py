@@ -14,6 +14,16 @@ from src.clients.github_client import (
 
 PACKAGES_FILE = os.getenv("PACKAGES_FILE", "packages.json")
 DEFAULT_PACKAGES_FILE = "packages.json"
+DEFAULT_PACKAGE_SOURCES = "github,registry"
+
+
+def _package_sources():
+    sources = os.getenv("PACKAGE_SOURCES", DEFAULT_PACKAGE_SOURCES)
+    return {
+        source.strip().lower()
+        for source in sources.split(",")
+        if source.strip()
+    }
 
 
 def _load_json_file(path):
@@ -119,7 +129,8 @@ def _packages_from_github(owner=None):
 
     try:
         repos = fetch_org_repos(org=owner)
-    except Exception:
+    except Exception as e:
+        print(f"Error loading GitHub repositories: {e}")
         return packages
 
     for repo in repos:
@@ -127,13 +138,14 @@ def _packages_from_github(owner=None):
         if not repo_name:
             continue
 
-        pyproject_content = fetch_repo_file(repo_name, "pyproject.toml", org=owner)
-        if not pyproject_content:
-            continue
-
         try:
+            pyproject_content = fetch_repo_file(repo_name, "pyproject.toml", org=owner)
+            if not pyproject_content:
+                continue
+
             contract = extract_contract(pyproject_content)
-        except Exception:
+        except Exception as e:
+            print(f"Error loading contract for {repo_name}: {e}")
             continue
 
         if not isinstance(contract, dict):
@@ -147,22 +159,29 @@ def _packages_from_github(owner=None):
 def get_packages(owner=None):
     packages_by_ref = {}
 
-    for package in _packages_from_github(owner=owner):
-        packages_by_ref[_package_key(package)] = package
+    sources = _package_sources()
 
-    for package in _packages_from_registry(owner=owner):
-        packages_by_ref[_package_key(package)] = package
+    if "github" in sources:
+        for package in _packages_from_github(owner=owner):
+            packages_by_ref[_package_key(package)] = package
+
+    if "registry" in sources:
+        for package in _packages_from_registry(owner=owner):
+            packages_by_ref[_package_key(package)] = package
 
     return list(packages_by_ref.values())
 
 
 def get_package_by_name(name, owner=None):
-    package = _get_package_from_registry(name, owner=owner)
-    if package:
-        return package
+    sources = _package_sources()
+
+    if "registry" in sources:
+        package = _get_package_from_registry(name, owner=owner)
+        if package:
+            return package
 
     repo_owner, repo_name = _split_package_ref(name, owner=owner)
-    if repo_owner:
+    if "github" in sources and repo_owner:
         repo_metadata = fetch_repo_metadata(repo_name, org=repo_owner)
         if not repo_metadata:
             return None
@@ -181,9 +200,10 @@ def get_package_by_name(name, owner=None):
 
         return normalize_package(repo_metadata, contract)
 
-    for package in _packages_from_github(owner=owner):
-        if name in {package.get("name"), package.get("full_name")}:
-            return package
+    if "github" in sources:
+        for package in _packages_from_github(owner=owner):
+            if name in {package.get("name"), package.get("full_name")}:
+                return package
 
     return None
 

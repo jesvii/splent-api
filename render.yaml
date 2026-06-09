@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: splent-api
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: PACKAGES_FILE
+        value: /data/packages.json
+      - key: PACKAGE_SOURCES
+        value: github,registry
+      - key: GITHUB_ORG
+        value: splent-io
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: SPLENT_API_TOKEN
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true

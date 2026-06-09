@@ -124,6 +124,7 @@ def test_get_packages_prefers_registry_data(packages_file, monkeypatch):
     assert packages[0]["contract"]["description"] == "Registry description"
 
 
+
 def test_load_packages_uses_default_file_when_configured_file_missing(
     tmp_path,
     monkeypatch,

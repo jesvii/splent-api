@@ -22,9 +22,17 @@ SPLENT_API_TOKEN=change-me
 PACKAGES_FILE=/data/packages.json
 GITHUB_ORG=splent-io
 GITHUB_TOKEN=
+PACKAGE_SOURCES=github,registry
 ```
 
 `GITHUB_ORG` is the default organization used when no owner is provided. By default this is `splent-io`.
+
+`PACKAGE_SOURCES` controls where `/api/packages` reads packages from:
+
+- `github`: reads repositories from the configured GitHub organization.
+- `registry`: reads packages from `PACKAGES_FILE`.
+- `github,registry`: combines both sources, with registry data taking
+  precedence when a package exists in both places.
 
 `SPLENT_API_TOKEN` is used by the CLI and marketplace as a Bearer token:
 
@@ -91,6 +99,19 @@ The marketplace registry file is stored in:
 ```
 
 inside the VM, mounted in the container as `/data/packages.json`.
+
+For Render deployments that should behave like the local Docker setup,
+configure:
+
+```env
+PACKAGE_SOURCES=github,registry
+GITHUB_ORG=splent-io
+```
+
+If the organization or its repositories are private, also configure
+`GITHUB_TOKEN` in Render. With `PACKAGE_SOURCES=github,registry`, the deployed
+API first reads packages from the configured GitHub organization and then merges
+the registry file, matching the local behavior.
 
 ## View packages
 

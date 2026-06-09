@@ -9,5 +9,6 @@ services:
       - .env
     environment:
       PACKAGES_FILE: /data/packages.json
+      PACKAGE_SOURCES: ${PACKAGE_SOURCES:-github,registry}
     volumes:
       - ./data:/data
