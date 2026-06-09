@@ -129,6 +129,7 @@ def _packages_from_github(owner=None):
 
     try:
         repos = fetch_org_repos(org=owner)
+        print(f"GitHub repositories found: {len(repos)}")
     except Exception as e:
         print(f"Error loading GitHub repositories: {e}")
         return packages
@@ -153,6 +154,7 @@ def _packages_from_github(owner=None):
 
         packages.append(normalize_package(repo, contract))
 
+    print(f"GitHub packages loaded: {len(packages)}")
     return packages
 
 

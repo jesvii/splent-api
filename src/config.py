@@ -8,7 +8,7 @@ class Config:
     FLASK_ENV = os.getenv("FLASK_ENV", "development")
     FLASK_DEBUG = os.getenv("FLASK_DEBUG", "0") == "1"
     DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///app.db")
-    GITHUB_ORG = os.getenv("GITHUB_ORG", "splent-io")
-    GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+    GITHUB_ORG = os.getenv("GITHUB_ORG") or "splent-io"
+    GITHUB_TOKEN = os.getenv("GITHUB_TOKEN") or None
     SPLENT_API_TOKEN = os.getenv("SPLENT_API_TOKEN")
     PACKAGES_FILE = os.getenv("PACKAGES_FILE", "packages.json")

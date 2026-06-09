@@ -4,10 +4,12 @@ from flask import current_app
 import time
 
 GITHUB_API_URL = "https://api.github.com"
+DEFAULT_GITHUB_ORG = "splent-io"
 
 
 def _resolve_org(org=None):
-    return org or current_app.config["GITHUB_ORG"]
+    resolved = org or current_app.config.get("GITHUB_ORG") or DEFAULT_GITHUB_ORG
+    return resolved.strip() or DEFAULT_GITHUB_ORG
 
 def check_rate_limit():
     headers = _build_headers()
@@ -52,7 +54,8 @@ def _get(url):
 
 def fetch_org_repos(org=None):
     org = _resolve_org(org)
-    response = _get(f"{GITHUB_API_URL}/orgs/{org}/repos")
+    print(f"Loading GitHub repositories from organization: {org}")
+    response = _get(f"{GITHUB_API_URL}/orgs/{org}/repos?per_page=100")
     response.raise_for_status()
     return response.json()
 
