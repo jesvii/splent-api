@@ -85,6 +85,21 @@ def test_publish_package_with_owner(client, monkeypatch):
     assert res.get_json() == package
 
 
+def test_publish_package_returns_500_on_unexpected_error(client, monkeypatch):
+    def fake_publish_package(data):
+        raise RuntimeError("disk is full")
+
+    monkeypatch.setattr("src.routes.packages.publish_package", fake_publish_package)
+
+    res = client.post(
+        "/api/packages",
+        json={"name": "splent_feature_demo"},
+    )
+
+    assert res.status_code == 500
+    assert res.get_json()["error"] == "Error publishing package"
+
+
 def test_update_package_not_found(client, monkeypatch):
     def fake_update_package(name, data):
         assert name == "missing-package"
@@ -99,3 +114,44 @@ def test_update_package_not_found(client, monkeypatch):
 
     assert res.status_code == 404
     assert res.get_json()["error"] == "Package not found"
+
+
+def test_update_package_bad_json(client):
+    res = client.put(
+        "/api/packages/splent_feature_demo",
+        data="not-json",
+        content_type="application/json",
+    )
+
+    assert res.status_code == 400
+    assert res.get_json()["error"] == "Request body must be valid JSON"
+
+
+def test_update_package_validation_error(client, monkeypatch):
+    def fake_update_package(name, data):
+        raise ValueError("Description cannot be empty")
+
+    monkeypatch.setattr("src.routes.packages.update_package", fake_update_package)
+
+    res = client.put(
+        "/api/packages/splent_feature_demo",
+        json={"description": ""},
+    )
+
+    assert res.status_code == 400
+    assert res.get_json()["error"] == "Description cannot be empty"
+
+
+def test_update_package_returns_500_on_unexpected_error(client, monkeypatch):
+    def fake_update_package(name, data):
+        raise RuntimeError("write failed")
+
+    monkeypatch.setattr("src.routes.packages.update_package", fake_update_package)
+
+    res = client.put(
+        "/api/packages/splent_feature_demo",
+        json={"description": "Updated"},
+    )
+
+    assert res.status_code == 500
+    assert res.get_json()["error"] == "Error updating package"
